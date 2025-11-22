@@ -1,0 +1,29 @@
+flowchart LR
+
+%% FRONTEND
+A["React SPA\n(User Interface)"] -->|OIDC Login| B["Keycloak"]
+A -->|Upload CSV/XLSX| C["Go API Gateway"]
+
+%% AUTH
+B -->|Token OIDC| C
+
+%% API + SALES INGESTION
+C -->|Publish raw sales| D(("Kafka\nsales.raw.uploaded"))
+
+%% ETL
+D --> E["ETL Service\nValidation + Cleaning"]
+E -->|sales.cleaned| F[("PostgreSQL")]
+E -->|features.generated| G(("Kafka\nfeatures.generated"))
+
+%% ML
+G --> H["ML Service\nInference + Training"]
+H -->|forecast result| F
+H -->|model.inference.completed| I(("Kafka"))
+
+%% MODEL REGISTRY
+H --> J["MLflow"]
+J --> K[("MinIO\nModel Artifacts")]
+
+%% DASHBOARD
+C -->|Query data| F
+A -->|Display dashboard| A
