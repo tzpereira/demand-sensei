@@ -7,23 +7,43 @@ A -->|Upload CSV/XLSX| C["Go API Gateway"]
 %% AUTH
 B -->|Token OIDC| C
 
-%% API + SALES INGESTION
-C -->|Publish raw sales| D(("Kafka\nsales.raw.uploaded"))
+%% PRODUCERS -> KAFKA
+C -->|publish: sales.raw.uploaded| D(("Kafka\nsales.raw.uploaded"))
+C -->|publish: forecast.requested| E(("Kafka\nforecast.requested"))
+F["ETL Service"] -->|publish: sales.cleaned| G(("Kafka\nsales.cleaned"))
+F -->|publish: features.generated| H(("Kafka\nfeatures.generated"))
+I["ML Service"] -->|publish: model.inference.completed| J(("Kafka\nmodel.inference.completed"))
+I -->|publish: model.inference.error| K(("Kafka\nmodel.inference.error"))
 
-%% ETL
-D --> E["ETL Service\nValidation + Cleaning"]
-E -->|sales.cleaned| F[("PostgreSQL")]
-E -->|features.generated| G(("Kafka\nfeatures.generated"))
+%% CONSUMERS
+D --> F
+G --> I
+H --> I
+E --> I
+J --> C
+K --> C
 
-%% ML
-G --> H["ML Service\nInference + Training"]
-H -->|forecast result| F
-H -->|model.inference.completed| I(("Kafka"))
+%% PERSISTENCE
+F -->|write: sales_clean| L[("PostgreSQL\nsales_clean")]
+F -->|write: features| L
+I -->|write: forecasts| L
+I -->|write: models_registry_snapshot| L
 
 %% MODEL REGISTRY
-H --> J["MLflow"]
-J --> K[("MinIO\nModel Artifacts")]
+I --> M["MLflow"]
+M --> N[("MinIO\nModel Artifacts")]
 
-%% DASHBOARD
-C -->|Query data| F
+%% DASHBOARD / QUERY
+C -->|query| L
 A -->|Display dashboard| A
+
+%% INFRA
+O["KRaft / Redpanda"]
+P["Schema Registry (Avro)"]
+D --- O
+G --- O
+H --- O
+J --- O
+K --- O
+E --- O
+P --- O
