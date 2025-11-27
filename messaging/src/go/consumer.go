@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"context"
+	"strings"
 
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -13,7 +14,7 @@ const BlockForever = -1
 // Returns a configured *ckafka.Consumer or an error if creation or subscription fails.
 func NewConsumer(brokers []string, groupID string, topics []string, config map[string]string) (*ckafka.Consumer, error) {
 	conf := &ckafka.ConfigMap{
-		"bootstrap.servers": brokers[0],
+		"bootstrap.servers": strings.Join(brokers, ","),
 		"group.id":          groupID,
 		"auto.offset.reset": "earliest",
 	}
