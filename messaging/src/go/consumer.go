@@ -2,7 +2,9 @@ package messaging
 
 import (
 	"context"
+	"log"
 	"strings"
+	"sync"
 
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -32,20 +34,81 @@ func NewConsumer(brokers []string, groupID string, topics []string, config map[s
 	return consumer, nil
 }
 
+// StartConsumers starts multiple Kafka consumers in separate goroutines.
+// Each consumer is created using the newConsumer function and processes messages using the provided handler.
+// The function blocks until all consumers have exited.
+// Returns an error if any consumer fails to start.
+func StartConsumers(ctx context.Context, num int, newConsumer func() (*ckafka.Consumer, error), handler func(msg *ckafka.Message)) error {
+    var wg sync.WaitGroup
+    for i := 0; i < num; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            consumer, err := newConsumer()
+            if err != nil {
+                log.Printf("Failed to create consumer: %v", err)
+                return
+            }
+            defer consumer.Close()
+            _ = Consume(ctx, consumer, handler)
+        }()
+    }
+    wg.Wait()
+    return nil
+}
+
 // Consume reads messages from the Kafka consumer and calls the handler for each message.
 // It blocks until the context is cancelled or an error occurs.
 // Returns ctx.Err() if the context is cancelled, or the error from consumer.ReadMessage if message consumption fails.
 func Consume(ctx context.Context, consumer *ckafka.Consumer, handler func(msg *ckafka.Message)) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			msg, err := consumer.ReadMessage(-1)
-			if err != nil {
-				return err
-			}
-			handler(msg)
-		}
-	}
+    for {
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        default:
+            msg, err := consumer.ReadMessage(BlockForever)
+            if err != nil {
+                // Log error and continue for transient errors
+                if kafkaErr, ok := err.(ckafka.Error); ok && kafkaErr.IsRetriable() {
+                    log.Printf("Transient error: %v", err)
+                    continue
+                }
+                // For fatal errors, return
+                return err
+            }
+            handler(msg)
+        }
+    }
+}
+
+// ConsumeBatch reads messages from the Kafka consumer in batches and calls the handler with a slice of messages.
+// It blocks until the context is cancelled or an error occurs.
+// Returns ctx.Err() if the context is cancelled.
+func ConsumeBatch(ctx context.Context, consumer *ckafka.Consumer, handler func(msgs []*ckafka.Message)) error {
+    batch := make([]*ckafka.Message, 0, 100)
+    for {
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        default:
+            ev := consumer.Poll(100) // 100 ms timeout
+            if ev == nil {
+                if len(batch) > 0 {
+                    handler(batch)
+                    batch = batch[:0]
+                }
+                continue
+            }
+            switch e := ev.(type) {
+            case *ckafka.Message:
+                batch = append(batch, e)
+                if len(batch) >= 100 {
+                    handler(batch)
+                    batch = batch[:0]
+                }
+            case ckafka.Error:
+                log.Printf("Consumer error: %v", e)
+            }
+        }
+    }
 }
