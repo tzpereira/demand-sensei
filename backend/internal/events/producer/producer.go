@@ -3,22 +3,22 @@ package events
 import (
 	"context"
 
-	"github.com/segmentio/kafka-go"
+	kafkasdk "github.com/tzpereira/go-kafka-sdk/kafka"
 )
 
-// NewProducer creates a Kafka writer for the specified topic
-func NewProducer(brokers []string, topic string) *kafka.Writer {
-	return &kafka.Writer{
-		Addr:     kafka.TCP(brokers...),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
+type Producer struct {
+	client *kafkasdk.Producer
 }
 
-// Produce sends a message to the specified Kafka topic
-func Produce(ctx context.Context, writer *kafka.Writer, key, value []byte) error {
-	return writer.WriteMessages(ctx, kafka.Message{
-		Key:   key,
-		Value: value,
-	})
+func NewProducer(brokers []string, topic string) (*Producer, error) {
+	p, err := kafkasdk.NewProducer(brokers, topic)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Producer{client: p}, nil
+}
+
+func (p *Producer) Produce(ctx context.Context, key, value []byte) error {
+	return p.client.Produce(ctx, key, value)
 }
