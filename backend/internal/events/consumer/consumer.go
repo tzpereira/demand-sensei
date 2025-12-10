@@ -3,25 +3,28 @@ package events
 import (
 	"context"
 
-	"github.com/segmentio/kafka-go"
+	kafkasdk "github.com/tzpereira/go-kafka-sdk/kafka"
 )
 
-// NewConsumer creates a Kafka reader for the specified topic
-func NewConsumer(brokers []string, topic, groupID string) *kafka.Reader {
-	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  brokers,
-		Topic:    topic,
-		GroupID:  groupID,
-	})
+type Consumer struct {
+    client *kafkasdk.Consumer
 }
 
-// Consume reads messages from the topic and executes the handler
-func Consume(ctx context.Context, reader *kafka.Reader, handler func(msg kafka.Message)) error {
-	for {
-		m, err := reader.ReadMessage(ctx)
-		if err != nil {
-			return err
-		}
-		handler(m)
-	}
+func NewConsumer(brokers []string, topic, groupID string) (*Consumer, error) {
+    cfg := &kafkasdk.Config{
+        Brokers: brokers,
+        Topics:  []string{topic},
+        GroupID: groupID,
+    }
+
+    c, err := kafkasdk.NewConsumer(cfg)
+    if err != nil {
+        return nil, err
+    }
+
+    return &Consumer{client: c}, nil
+}
+
+func (c *Consumer) Consume(ctx context.Context, handler func([]byte) error) error {
+    return c.client.Consume(ctx, handler)
 }
