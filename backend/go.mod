@@ -4,7 +4,7 @@ go 1.24.5
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.10
-	github.com/tzpereira/go-kafka-sdk v0.1.2
+	github.com/tzpereira/go-kafka-sdk v0.1.3
 )
 
 require (

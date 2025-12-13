@@ -124,8 +124,8 @@ github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709/go.mod h1:M5WIy
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tzpereira/go-kafka-sdk v0.1.2 h1:fik0Zu5bKCHDAE8OwIETjedxTfGWO9nXWFvMLkkHAYk=
-github.com/tzpereira/go-kafka-sdk v0.1.2/go.mod h1:wvnBLFqkhia/D6gF4PwnyLhF3givRxlBX6PMbw2KXYs=
+github.com/tzpereira/go-kafka-sdk v0.1.3 h1:uDswGZtdRMl9YzXh13YAt28rL7QM1fFt1BXwMfJxNQQ=
+github.com/tzpereira/go-kafka-sdk v0.1.3/go.mod h1:wvnBLFqkhia/D6gF4PwnyLhF3givRxlBX6PMbw2KXYs=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.51.0 h1:8b30A5JlZ6C7AS81RsWjYMQmrZG6feChmgAolCl1SqA=
