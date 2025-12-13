@@ -6,6 +6,6 @@ import (
 	"demand-sensei/backend/internal/http/handlers"
 )
 
-func Register(r fiber.Router) {
+func RegisterHealthRoutes(r fiber.Router) {
 	r.Get("/health", handlers.HealthHandler)
 }
