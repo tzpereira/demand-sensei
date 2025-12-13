@@ -9,5 +9,6 @@ import (
 func Register(app *fiber.App) {
     api := app.Group("/api/v1")
 
-    routes.Register(api)
+    routes.RegisterHealthRoutes(api)
+    routes.RegisterImportRoutes(api)
 }
