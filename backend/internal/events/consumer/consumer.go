@@ -7,24 +7,21 @@ import (
 )
 
 type Consumer struct {
-    client *kafkasdk.Consumer
+	client *kafkasdk.Consumer
 }
 
-func NewConsumer(brokers []string, topic, groupID string) (*Consumer, error) {
-    cfg := &kafkasdk.Config{
-        Brokers: brokers,
-        Topics:  []string{topic},
-        GroupID: groupID,
-    }
-
-    c, err := kafkasdk.NewConsumer(cfg)
-    if err != nil {
-        return nil, err
-    }
-
-    return &Consumer{client: c}, nil
+func NewConsumer(brokers []string, groupID string, topics []string) (*Consumer, error) {
+	c, err := kafkasdk.NewConsumer(brokers, groupID, topics, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &Consumer{client: c}, nil
 }
 
-func (c *Consumer) Consume(ctx context.Context, handler func([]byte) error) error {
-    return c.client.Consume(ctx, handler)
+func (c *Consumer) Consume(ctx context.Context, handler func(msg *kafkasdk.Message)) error {
+	return c.client.Consume(ctx, handler)
+}
+
+func (c *Consumer) Close() {
+	c.client.Close()
 }
