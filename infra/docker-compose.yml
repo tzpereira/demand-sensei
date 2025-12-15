@@ -8,4 +8,6 @@ services:
       dockerfile: docker/backend/Dockerfile
     ports:
       - "9001:9001"
+    volumes:
+      - ../backend/data:/app/data
     restart: unless-stopped
