@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-const TEMP_UPLOAD_DIR = "../../../temp/uploads"
+const TEMP_UPLOAD_DIR = "/app/data/uploads"
 
 func ImportHandler(c *fiber.Ctx) error {
 	file, err := c.FormFile("file")
