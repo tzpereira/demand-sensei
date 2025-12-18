@@ -1,2 +1,3 @@
 docs/private
 backend/data/uploads/
+backend/.env
