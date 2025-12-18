@@ -4,17 +4,17 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
-)
 
-const UploadDir = "/app/data/uploads"
+	"github.com/google/uuid"
+)
 
 type LocalStorage struct {
 	BasePath string
 }
 
-func NewLocalStorage() *LocalStorage {
+func NewLocalStorage(basePath string) *LocalStorage {
 	return &LocalStorage{
-		BasePath: UploadDir,
+		BasePath: basePath,
 	}
 }
 
@@ -23,7 +23,8 @@ func (s *LocalStorage) Save(file *multipart.FileHeader) (*UploadResult, error) {
 		return nil, err
 	}
 
-	dstPath := filepath.Join(s.BasePath, file.Filename)
+	filename := uuid.New().String() + "_" + file.Filename
+	dstPath := filepath.Join(s.BasePath, filename)
 
 	src, err := file.Open()
 	if err != nil {
@@ -42,7 +43,7 @@ func (s *LocalStorage) Save(file *multipart.FileHeader) (*UploadResult, error) {
 	}
 
 	return &UploadResult{
-		Filename: file.Filename,
+		Filename: filename,
 		Size:     file.Size,
 		Path:     dstPath,
 	}, nil
