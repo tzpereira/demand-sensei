@@ -7,11 +7,13 @@ import (
 )
 
 type ImportService struct {
-	storage *storage.LocalStorage
+	storage storage.Storage
 }
 
-func NewImportService(storage *storage.LocalStorage) *ImportService {
-	return &ImportService{storage: storage}
+func NewImportService(st storage.Storage) *ImportService {
+	return &ImportService{
+		storage: st,
+	}
 }
 
 func (s *ImportService) Import(file *multipart.FileHeader) (*storage.UploadResult, error) {
