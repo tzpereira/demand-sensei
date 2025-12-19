@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+	"log"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
 
 	"github.com/google/uuid"
@@ -42,17 +44,44 @@ func NewS3CompatibleStorage(
 func (s *S3CompatibleStorage) Save(file *multipart.FileHeader) (*UploadResult, error) {
 	src, err := file.Open()
 	if err != nil {
+		log.Println("Failed to open uploaded file:", err)
 		return nil, err
 	}
 	defer src.Close()
 
-	filename := uuid.New().String() + "_" + file.Filename
+	log.Println("Opened file:", file.Filename, "size:", file.Size)
+
+	exists, err := s.Client.BucketExists(context.Background(), s.Bucket)
+	if err != nil {
+		log.Println("Failed to check bucket existence:", err)
+		return nil, err
+	}
+	if !exists {
+		log.Println("Bucket does not exist, creating:", s.Bucket)
+		err = s.Client.MakeBucket(context.Background(), s.Bucket, minio.MakeBucketOptions{})
+		if err != nil {
+			log.Println("Failed to create bucket:", err)
+			return nil, err
+		}
+	}
+
+	ext := filepath.Ext(file.Filename)
+	filename := uuid.New().String() + ext
 
 	objectPath := filename
 	if s.BasePath != "" {
 		objectPath = filepath.Join(s.BasePath, filename)
 	}
 
+	contentType := file.Header.Get("Content-Type")
+	if contentType == "" {
+		buf := make([]byte, 512)
+		_, _ = src.Read(buf)
+		contentType = http.DetectContentType(buf)
+		_, _ = src.Seek(0, 0)
+	}
+
+	log.Println("Uploading file to MinIO:", objectPath, "contentType:", contentType)
 	info, err := s.Client.PutObject(
 		context.Background(),
 		s.Bucket,
@@ -60,13 +89,15 @@ func (s *S3CompatibleStorage) Save(file *multipart.FileHeader) (*UploadResult, e
 		src,
 		file.Size,
 		minio.PutObjectOptions{
-			ContentType: file.Header.Get("Content-Type"),
+			ContentType: contentType,
 		},
 	)
 	if err != nil {
+		log.Println("MinIO upload failed:", err)
 		return nil, err
 	}
 
+	log.Println("Upload successful:", objectPath, "size:", info.Size)
 	return &UploadResult{
 		Filename: filename,
 		Size:     info.Size,
