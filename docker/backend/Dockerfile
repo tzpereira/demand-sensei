@@ -12,7 +12,5 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/backend/bin/backend .
 
-RUN mkdir -p /app/data/uploads
-
 EXPOSE 9001
 CMD ["./backend"]
