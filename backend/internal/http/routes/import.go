@@ -19,10 +19,10 @@ func RegisterImportRoutes(r fiber.Router) {
 		os.Getenv("S3_ACCESS_KEY"),
 		os.Getenv("S3_SECRET_KEY"),
 		os.Getenv("S3_BUCKET"),
-		"imports",
+		os.Getenv("S3_BASE_PATH"),
 		os.Getenv("S3_USE_SSL") == "true",
 	)
-	
+
 	if err != nil {
 		panic(err)
 	}
