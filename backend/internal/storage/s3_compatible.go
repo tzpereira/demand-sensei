@@ -12,12 +12,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-type S3CompatibleStorage struct {
-	Client   *minio.Client
-	Bucket   string
-	BasePath string
-}
-
 func NewS3CompatibleStorage(
 	endpoint string,
 	accessKey string,

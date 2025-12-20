@@ -1,6 +1,10 @@
 package storage
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+
+	"github.com/minio/minio-go/v7"
+)
 
 type UploadResult struct {
 	Filename string
@@ -11,3 +15,10 @@ type UploadResult struct {
 type Storage interface {
 	Save(file *multipart.FileHeader) (*UploadResult, error)
 }
+
+type S3CompatibleStorage struct {
+	Client   *minio.Client
+	Bucket   string
+	BasePath string
+}
+
