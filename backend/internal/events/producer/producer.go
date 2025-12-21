@@ -1,7 +1,8 @@
-package events
+package kafka
 
 import (
 	"context"
+	"log"
 
 	kafkasdk "github.com/tzpereira/go-kafka-sdk/kafka"
 )
@@ -11,24 +12,41 @@ type Producer struct {
 	topic  string
 }
 
-func NewProducer(brokers []string, topic string) (*Producer, error) {
+func NewProducer(
+	ctx context.Context,
+	brokers []string,
+	topic string,
+) (*Producer, error) {
 	producer, err := kafkasdk.NewProducer(brokers, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &Producer{client: producer, topic: topic}, nil
+
+	// Delivery handler global
+	producer.StartDeliveryHandler(ctx, func(m *kafkasdk.Message) {
+		log.Printf(
+			"message delivered | topic=%s partition=%d",
+			m.Topic,
+			m.Partition,
+		)
+	})
+
+	return &Producer{
+		client: producer,
+		topic:  topic,
+	}, nil
 }
 
-func (p *Producer) Produce(ctx context.Context, value []byte) error {
-	msg := &kafkasdk.Message{
+func (p *Producer) Produce(
+	ctx context.Context,
+	key []byte,
+	value []byte,
+) error {
+	return p.client.Produce(ctx, &kafkasdk.Message{
 		Topic: p.topic,
+		Key:   key,
 		Value: value,
-	}
-	return p.client.Produce(ctx, msg)
-}
-
-func (p *Producer) StartDeliveryHandler(ctx context.Context, handler func(m *kafkasdk.Message)) {
-	p.client.StartDeliveryHandler(ctx, handler)
+	})
 }
 
 func (p *Producer) Flush(timeoutMs int) {
