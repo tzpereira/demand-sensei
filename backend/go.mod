@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go/v7 v7.0.97
-	github.com/tzpereira/go-kafka-sdk v0.1.3
+	github.com/tzpereira/go-kafka-sdk v0.1.4
 )
 
 require (
