@@ -3,12 +3,12 @@ package router
 import (
 	"github.com/gofiber/fiber/v2"
 
-	routes "demand-sensei/backend/internal/http/routes"
+	"demand-sensei/backend/internal/http/routes"
 )
 
 func Register(app *fiber.App) {
-    api := app.Group("/api/v1")
+	api := app.Group("/api/v1")
 
-    routes.RegisterHealthRoutes(api)
-    routes.RegisterImportRoutes(api)
+	routes.RegisterHealthRoutes(api)
+	routes.RegisterImportRoutes(api)
 }
