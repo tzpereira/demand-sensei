@@ -1,4 +1,4 @@
-package kafka
+package producer
 
 import (
 	"context"
@@ -9,20 +9,18 @@ import (
 
 type Producer struct {
 	client *kafkasdk.Producer
-	topic  string
 }
 
 func NewProducer(
 	ctx context.Context,
 	brokers []string,
-	topic string,
 ) (*Producer, error) {
 	producer, err := kafkasdk.NewProducer(brokers, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Delivery handler global
+	// Delivery handler global 
 	producer.StartDeliveryHandler(ctx, func(m *kafkasdk.Message) {
 		log.Printf(
 			"message delivered | topic=%s partition=%d",
@@ -33,17 +31,17 @@ func NewProducer(
 
 	return &Producer{
 		client: producer,
-		topic:  topic,
 	}, nil
 }
 
 func (p *Producer) Produce(
 	ctx context.Context,
+	topic string,
 	key []byte,
 	value []byte,
 ) error {
 	return p.client.Produce(ctx, &kafkasdk.Message{
-		Topic: p.topic,
+		Topic: topic,
 		Key:   key,
 		Value: value,
 	})
