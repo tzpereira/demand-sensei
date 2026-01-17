@@ -48,7 +48,10 @@ func main() {
 		log.Fatalf("failed to init s3 storage: %v", err)
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StrictRouting: false,
+		CaseSensitive: false,
+	})
 
 	router.Register(app, deps.Deps{
 		Producer: kafkaProducer,
