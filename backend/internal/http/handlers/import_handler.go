@@ -5,10 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"demand-sensei/backend/internal/http/validators"
 	"demand-sensei/backend/internal/services"
 )
 
-func ImportHandler(svc *services.ImportService) fiber.Handler {
+func ImportHandler(svc *services.ImportService, importType string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("Incoming request: file upload")
 
@@ -19,6 +20,12 @@ func ImportHandler(svc *services.ImportService) fiber.Handler {
 		}
 
 		log.Printf("File received: %s (%d bytes)\n", file.Filename, file.Size)
+
+		validator := validators.GetValidator(importType)
+		if err := validator(file); err != nil {
+			log.Printf("Validation failed for %s: %v\n", file.Filename, err)
+			return fiber.NewError(fiber.StatusBadRequest, "invalid file format: "+err.Error())
+		}
 
 		result, err := svc.Import(file)
 		if err != nil {
