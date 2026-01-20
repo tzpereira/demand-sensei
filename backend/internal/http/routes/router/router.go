@@ -8,7 +8,8 @@ import (
 )
 
 func Register(app *fiber.App, d deps.Deps) {
-	api := app.Group("/api/v1")
-	routes.RegisterHealthRoutes(api)
-	routes.RegisterImportRoutes(api, d)
+    api := app.Group("/api/v1")
+
+    routes.RegisterHealthRoutes(api)
+    routes.RegisterImportRoutes(api, d)
 }
