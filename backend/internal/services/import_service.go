@@ -24,20 +24,32 @@ func NewImportService(
 	}
 }
 
-func (s *ImportService) Import(file *multipart.FileHeader) (*storage.UploadResult, error) {
+func (s *ImportService) Import(
+	file *multipart.FileHeader,
+	importType string,
+) (*storage.UploadResult, error) {
+
 	result, err := s.storage.Save(file)
 	if err != nil {
 		return nil, err
 	}
 
-	payload, _ := json.Marshal(result)
+	payload, _ := json.Marshal(map[string]interface{}{
+		"import_type": importType,
+		"filename":    result.Filename,
+		"path":        result.Path,
+		"size":        result.Size,
+	})
+
+	topic := "import." + importType + ".created"
 
 	_ = s.producer.Produce(
 		context.Background(),
-		"imports.created",
+		topic,
 		[]byte(result.Filename),
 		payload,
 	)
 
 	return result, nil
 }
+

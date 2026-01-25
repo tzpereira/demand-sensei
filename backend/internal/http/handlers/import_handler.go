@@ -27,7 +27,7 @@ func ImportHandler(svc *services.ImportService, importType string) fiber.Handler
 			return fiber.NewError(fiber.StatusBadRequest, "invalid file format: "+err.Error())
 		}
 
-		result, err := svc.Import(file)
+		result, err := svc.Import(file, importType)
 		if err != nil {
 			log.Printf("File upload failed for %s: %v\n", file.Filename, err)
 			return fiber.NewError(fiber.StatusInternalServerError, "failed to upload file")
