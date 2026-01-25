@@ -9,7 +9,8 @@ import (
 )
 
 func RegisterImportRoutes(r fiber.Router, d deps.Deps) {
-	service := services.NewImportService(d.Storage, d.Producer)
+    service := services.NewImportService(d.Storage, d.Producer)
 
-    r.Post("/importsales", handlers.ImportHandler(service, "sales"))
+    importGroup := r.Group("/import")
+    importGroup.Post("/sales", handlers.ImportHandler(service, "sales"))
 }
