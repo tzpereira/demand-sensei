@@ -1,4 +1,4 @@
-package models
+package schemas
 
 // Upload contract — ONLY headers required and allowed fields
 type SalesImportSchema struct {

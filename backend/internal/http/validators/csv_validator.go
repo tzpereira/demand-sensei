@@ -7,24 +7,31 @@ import (
 	"reflect"
 	"strings"
 
-	"demand-sensei/backend/internal/http/models"
+	models "demand-sensei/backend/internal/http/schemas"
 )
 
-// Returns the correct validator based on import type
+// Returns a generic CSV validator that resolves schema by import type
 func GetValidator(importType string) func(*multipart.FileHeader) error {
-	switch importType {
-	case "sales":
-		return ValidateSales
-	default:
+	schema, err := getSchemaByImportType(importType)
+	if err != nil {
 		return func(file *multipart.FileHeader) error {
-			return errors.New("invalid import type")
+			return err
 		}
+	}
+
+	return func(file *multipart.FileHeader) error {
+		return validateCSVHeaders(file, schema)
 	}
 }
 
-// Sales CSV validator (header-only validation)
-func ValidateSales(file *multipart.FileHeader) error {
-	return validateCSVHeaders(file, models.SalesImportSchema{})
+// Maps import type -> schema
+func getSchemaByImportType(importType string) (interface{}, error) {
+	switch importType {
+	case "sales":
+		return models.SalesImportSchema{}, nil
+	default:
+		return nil, errors.New("invalid import type")
+	}
 }
 
 // Validates CSV headers against required fields defined in struct tags
