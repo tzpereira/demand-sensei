@@ -41,7 +41,7 @@ func (s *ImportService) Import(
 		"size":        result.Size,
 	})
 
-	topic := "import." + importType + ".created"
+	topic := importType + ".raw.uploaded"
 
 	_ = s.producer.Produce(
 		context.Background(),
