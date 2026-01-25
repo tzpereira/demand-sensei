@@ -20,12 +20,16 @@ func NewProducer(
 		return nil, err
 	}
 
-	// Delivery handler global 
+	// Global delivery handler 
 	producer.StartDeliveryHandler(ctx, func(m *kafkasdk.Message) {
+		importType := string(m.Key)
+
 		log.Printf(
-			"message delivered | topic=%s partition=%d",
+			"message delivered key=%s topic=%s partition=%d value=%s\n",
+			importType,
 			m.Topic,
 			m.Partition,
+			string(m.Value),
 		)
 	})
 
