@@ -10,6 +10,7 @@ import (
 	"demand-sensei/backend/internal/http/models"
 )
 
+// Returns the correct validator based on import type
 func GetValidator(importType string) func(*multipart.FileHeader) error {
 	switch importType {
 	case "sales":
@@ -21,28 +22,33 @@ func GetValidator(importType string) func(*multipart.FileHeader) error {
 	}
 }
 
+// Sales CSV validator (header-only validation)
 func ValidateSales(file *multipart.FileHeader) error {
-	return validateCSV(file, models.SalesRecord{})
+	return validateCSVHeaders(file, models.SalesImportSchema{})
 }
 
-func validateCSV(file *multipart.FileHeader, model interface{}) error {
+// Validates CSV headers against required fields defined in struct tags
+func validateCSVHeaders(file *multipart.FileHeader, schema interface{}) error {
 	f, err := file.Open()
 	if err != nil {
 		return errors.New("failed to open file: " + err.Error())
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
-	headers, err := r.Read()
+	reader := csv.NewReader(f)
+	reader.TrimLeadingSpace = true
+
+	headers, err := reader.Read()
 	if err != nil {
 		return errors.New("failed to read CSV header: " + err.Error())
 	}
 
-	requiredFields := getRequiredCSVFields(model)
+	normalizedHeaders := normalize(headers)
+	requiredFields := getRequiredCSVFields(schema)
 
-	missing := []string{}
+	var missing []string
 	for _, field := range requiredFields {
-		if !contains(headers, field) {
+		if !contains(normalizedHeaders, field) {
 			missing = append(missing, field)
 		}
 	}
@@ -54,8 +60,9 @@ func validateCSV(file *multipart.FileHeader, model interface{}) error {
 	return nil
 }
 
-func getRequiredCSVFields(model interface{}) []string {
-	t := reflect.TypeOf(model)
+// Extracts required CSV fields from struct tags
+func getRequiredCSVFields(schema interface{}) []string {
+	t := reflect.TypeOf(schema)
 	fields := []string{}
 
 	for i := 0; i < t.NumField(); i++ {
@@ -64,12 +71,25 @@ func getRequiredCSVFields(model interface{}) []string {
 		if strings.Contains(f.Tag.Get("validate"), "required") {
 			csvTag := strings.Split(f.Tag.Get("csv"), ",")[0]
 			if csvTag != "" {
-				fields = append(fields, csvTag)
+				fields = append(fields, normalizeValue(csvTag))
 			}
 		}
 	}
 
 	return fields
+}
+
+// Helpers
+func normalize(values []string) []string {
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		out = append(out, normalizeValue(v))
+	}
+	return out
+}
+
+func normalizeValue(v string) string {
+	return strings.ToLower(strings.TrimSpace(v))
 }
 
 func contains(list []string, value string) bool {
