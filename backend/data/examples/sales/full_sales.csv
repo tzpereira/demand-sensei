@@ -1,0 +1,3 @@
+order_id,order_date,product_id,quantity,channel,marketplace,order_status,payment_method,product_name,category,brand,variant,unit_price,revenue,discount,promotion,customer_region,customer_state,is_new_customer,shipping_method,shipping_days,shipping_cost,delivery_date,campaign,traffic_source,device
+ORD-2001,2026-03-01,SKU-TSHIRT-BLK-M,2,ecommerce,site,paid,credit_card,Basic T-Shirt,apparel,Acme,Black M,49.90,99.80,0.00,,southeast,SP,true,standard,3,12.50,2026-03-04,always-on,organic,mobile
+ORD-2002,2026-03-02,SKU-SHOE-WHT-42,1,marketplace,mercado_livre,shipped,pix,Runner Shoe,footwear,Acme,White 42,199.90,179.91,19.99,summer_sale,south,PR,false,express,1,24.90,2026-03-03,influencer-a,paid_social,desktop
