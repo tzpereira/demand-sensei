@@ -1,13 +1,14 @@
 name: demand-sensei
 
-version: "3.9"
-
 services:
   backend:
     container_name: backend
+    platform: linux/${BACKEND_BUILD_ARCH:-arm64} # Allow overriding build architecture (default: arm64)
     build:
       context: ../..
       dockerfile: infra/docker/backend.Dockerfile
+      args:
+        GOARCH: ${BACKEND_BUILD_ARCH:-arm64} # Forward architecture to Dockerfile
     ports:
       - "9001:9001"
     volumes:
